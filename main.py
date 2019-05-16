@@ -33,24 +33,23 @@ def initTransaction(tx):
 
 
 def addDoctor(tx, name, especialidad, tel):
-    tx.run("MERGE (d: Doctor {name: $name, especialidad: $especialidad, tel: $tel})")
+    tx.run("MERGE (d: Doctor {name: $name, especialidad: $especialidad, tel: $tel})",
+            name=name, especialidad=especialidad, tel=tel)
 
 def addPatient(tx, name, tel):
-    tx.run("MERGE (p: Patient {name: $name, tel: $tel})")
+    tx.run("MERGE (p: Patient {name: $name, tel: $tel})",
+            name=name, tel=tel)
 
 def visitaMedica(tx, patient, doctor, date, drug):
     tx.run("""
-    MERGE
-        (p: Patient {name: $patient}),
-        (dc: Doctor {name: $doctor}),
-        (d: Drug {name: $drug}),
-        (p) -[:VISITS {date: $date}]-> (dc)  -[:PRESCRIBES]-> (d) <-[:TAKES]- (p)
-    """)
+    MATCH (p: Patient) WHERE p.name = $patient
+    MERGE (p) -[:VISITS {date: $date}]-> (dc: Doctor {name: $doctor}) -[:PRESCRIBES]-> (d: Drug {name: $drug}) <-[:TAKES]- (p);
+    """, patient=patient, doctor=doctor, drug=drug, date=date)
 
 def findDoctor(tx, especialidad):
     tx.run("""
     MATCH (d: Doctor {especialidad: $especialidad})
-    """)
+    """, especialidad=especialidad)
 
 # def add_friend(tx, name, friend_name):
 #     tx.run("MERGE (a:Person {name: $name}) "
@@ -65,6 +64,7 @@ def findDoctor(tx, especialidad):
 with driver.session() as session:
     session.write_transaction(deleteLast)
     session.write_transaction(initTransaction)
+    session.write_transaction(visitaMedica, "Luca RB", "Pedro Infantes", "20191505", "Penicilina")
     # session.write_transaction(add_friend, "Arthur", "Guinevere")
     # session.write_transaction(add_friend, "Arthur", "Lancelot")
     # session.write_transaction(add_friend, "Arthur", "Merlin")
