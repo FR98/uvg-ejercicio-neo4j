@@ -42,10 +42,19 @@ CREATE
     (Cristina) -[:VISITS {date:'15112019'}]-> (Pasteur) -[:PRESCRIBES]-> (Amoxicilina) <-[:TAKES]- (Cristina),
     (MariaI) -[:VISITS {date:'11122016'}]-> (Hipocrates) -[:PRESCRIBES]-> (Amlodipina) <-[:TAKES]- (MariaI),
     (Luca) -[:VISITS {date:'11102015'}]-> (Apgar) -[:PRESCRIBES]-> (Omeprazol) <-[:TAKES]- (Luca),
+    (Marco) -[:VISITS {date:'01072012'}]-> (Metrodora) -[:PRESCRIBES]-> (Lexotiroxina) <-[:TAKES]- (Marco),
+    (Camila) -[:VISITS {date:'05042008'}]-> (Blackwell) -[:PRESCRIBES]-> (Colecalciferol) <-[:TAKES]- (Camila),
+    (Abril) -[:VISITS {date:'05042008'}]-> (Lister) -[:PRESCRIBES]-> (Furosemida) <-[:TAKES]- (Abril),
+    (Alfredo) -[:VISITS {date:'05042008'}]-> (Netter) -[:PRESCRIBES]-> (Warafina) <-[:TAKES]- (Alfredo),
     (Willi) -[:KNOWS]-> (Luca),
     (Andy) -[:KNOWS]-> (Marco),
     (Cristina) -[:KNOWS]-> (Abril),
     (MariaI) -[:KNOWS]-> (Cristina),
+    (Marco) -[:KNOWS]-> (Juan),
+    (Camila) -[:KNOWS]-> (Willi),
+    (Abril) -[:KNOWS]-> (Luca),
+    (Alfredo) -[:KNOWS]-> (Andy),
+    (Juan) -[:KNOWS]-> (Willi),
     (Luca) -[:KNOWS]-> (Alfredo);
 
     MATCH (n) RETURN n;
