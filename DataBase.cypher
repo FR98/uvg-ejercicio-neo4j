@@ -1,5 +1,3 @@
-// Borra todo
-MATCH (n) DETACH DELETE n;
 CREATE
     //Patients
     (Luca: Patient {name: 'Luca', tel: 123456}),
@@ -12,7 +10,7 @@ CREATE
     (Camila: Patient {name: 'Camila', tel: 56438765}),
     (Abril: Patient {name: 'Abril', tel: 54786523}),
     (Alfredo: Patient {name: 'Alfredo', tel: 47611839}),
-//Doctors
+    //Doctors
     (DrHouse: Doctor {name: 'Gregory House', especialidad: 'Pediatra', tel: 789456}),
     (Pedro: Doctor {name: 'Pedro', especialidad: 'Internista', tel: 888845}),
     (Freud: Doctor {name: 'Sigmund Freud', especialidad: 'Psicologo', tel: 45321234}),
@@ -23,7 +21,7 @@ CREATE
     (Lister: Doctor {name: 'Joseph Lister', especialidad: 'Cirujano', tel: 43876542}),
     (Apgar: Doctor {name: 'Virginia Apgar', especialidad: 'Anestesista', tel: 54329087}),
     (Netter: Doctor {name: 'Frank H. Netter', especialidad: 'Dentista', tel: 888845}),
-//Drugs
+    //Drugs
     (Paracetamol: Drug {name: 'Paracetamol'}),
     (Aspirina: Drug {name: 'Aspirina'}),
     (Lansoprazol: Drug {name: 'Lansoprazol'}),
@@ -35,7 +33,7 @@ CREATE
     (Furosemida: Drug {name: 'Furosemida'}),
     (Warafina: Drug {name: 'Warafina'}),
 
-//Relations
+    //Relations
     (Willi) -[:VISITS {date:'10012010'}]-> (DrHouse) -[:PRESCRIBES]-> (Paracetamol) <-[:TAKES]- (Willi),
     (Juan) -[:VISITS {date:'20170515'}]-> (Pedro) -[:PRESCRIBES]-> (Aspirina) <-[:TAKES]- (Juan),
     (Andy) -[:VISITS {date:'28052017'}]-> (Freud) -[:PRESCRIBES]-> (Lansoprazol) <-[:TAKES]- (Andy),
@@ -56,5 +54,3 @@ CREATE
     (Alfredo) -[:KNOWS]-> (Andy),
     (Juan) -[:KNOWS]-> (Willi),
     (Luca) -[:KNOWS]-> (Alfredo);
-
-    MATCH (n) RETURN n;
