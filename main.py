@@ -68,8 +68,24 @@ def initTransaction(tx):
         (Juan) -[:KNOWS]-> (Willi),
         (Luca) -[:KNOWS]-> (Alfredo),
         (Willi) -[:KNOWS]-> (Andy),
+        (Abril) -[:KNOWS]-> (Camila),
+        (Marco) -[:KNOWS]-> (Cristina),
+        (Camila) -[:KNOWS]-> (MariaI),
+        //Medicos
+        (Pasteur) -[:KNOWS]-> (Freud),
+        (Pedro) -[:KNOWS]-> (Hipocrates),
+        (Lister) -[:KNOWS]-> (DrHouse),
+        (Pedro) -[:KNOWS]-> (Apgar),
+        (Netter) -[:KNOWS]-> (Blackwell),
+        (Blackwell) -[:KNOWS]-> (Metrodora),
+        (Hipocrates) -[:KNOWS]-> (Metrodora),
+        (Metrodora) -[:KNOWS]-> (Pasteur),
+        (Pedro) -[:KNOWS]-> (Metrodora),
+        (Apgar) -[:KNOWS]-> (Lister),
+        (Freud) -[:KNOWS]-> (Blackwell),
+        (DrHouse) -[:KNOWS]-> (Hipocrates),
+        (Lister) -[:KNOWS]-> (Apgar),
         (DrHouse) -[:KNOWS]-> (Freud);
-
     """)
 
 
@@ -100,6 +116,8 @@ def showDoctors(tx, especialidad):
 
 def makeRelationship(tx, person1, person2):
     #---------------------------------------------Hay que crearlos si no existen?
+    #---------------------------------------------Un nodo puede ser persona y doctor?
+    #---------------------------------------------Un nodo puede ser persona y paciente?
     tx.run("""
     MATCH (p1: Patient) WHERE p1.name = $person1
     MATCH (p2: Patient) WHERE p2.name = $person2
