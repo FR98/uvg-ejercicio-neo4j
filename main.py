@@ -2,7 +2,6 @@
 # Gian Luca Rivera 18049
 # Francisco Rosal 18676
 # Programa de recomendacion de medicos
-# -[:]->
 
 from neo4j import GraphDatabase
 
