@@ -27,8 +27,7 @@ def initTransaction(tx):
 
     //Relations
         (Willi) -[:VISITS {date:'20001230'}]-> (DocAmigo) -[:PRESCRIBES]-> (Paracetamol) <-[:TAKES]- (Willi),
-        (Juan) -[:VISITS {date:'20170515'}]-> (Pedro) -[:PRESCRIBES]-> (Aspirina) <-[:TAKES]- (Juan),
-        (Willi) -[:KNOWS]-> (Luca);
+        (Juan) -[:VISITS {date:'20170515'}]-> (Pedro) -[:PRESCRIBES]-> (Aspirina) <-[:TAKES]- (Juan);
     """)
 
 
@@ -46,26 +45,31 @@ def visitaMedica(tx, patient, doctor, date, drug):
     MERGE (p) -[:VISITS {date: $date}]-> (dc: Doctor {name: $doctor}) -[:PRESCRIBES]-> (d: Drug {name: $drug}) <-[:TAKES]- (p);
     """, patient=patient, doctor=doctor, drug=drug, date=date)
 
-def findDoctor(tx, especialidad):
-    tx.run("""
-    MATCH (d: Doctor {especialidad: $especialidad})
-    """, especialidad=especialidad)
+def findDoctors(tx, especialidad):
+    for doctor in tx.run("""
+    MATCH (d: Doctor) WHERE d.especialidad = $especialidad
+    RETURN d
+    """, especialidad=especialidad):
+        print(doctor["d"])
 
-# def add_friend(tx, name, friend_name):
-#     tx.run("MERGE (a:Person {name: $name}) "
-#            "MERGE (a)-[:KNOWS]->(friend:Person {name: $friend_name})",
-#            name=name, friend_name=friend_name)
-#
 # def print_friends(tx, name):
 #     for record in tx.run("MATCH (a:Person)-[:KNOWS]->(friend) WHERE a.name = $name "
 #                          "RETURN friend.name ORDER BY friend.name", name=name):
 #         print(record["friend.name"])
 
+def makeRelationship(tx, person1, person2):
+    tx.run("""
+    MATCH (p1: Patient) WHERE p1.name = $person1
+    MATCH (p2: Patient) WHERE p2.name = $person2
+    MERGE (p1) -[:KNOWS]-> (p2)
+    """, person1=person1, person2=person2)
+
 with driver.session() as session:
     session.write_transaction(deleteLast)
     session.write_transaction(initTransaction)
+    session.write_transaction(addDoctor, "Juan Paco Pedro de la Mar", "Cirujano Plastico", "456789")
+    session.write_transaction(addDoctor, "Juan Paco Pedro de la Mar", "Pediatra", "456789")
+    session.write_transaction(addPatient, "Paco", "555555")
     session.write_transaction(visitaMedica, "Luca RB", "Pedro Infantes", "20191505", "Penicilina")
-    # session.write_transaction(add_friend, "Arthur", "Guinevere")
-    # session.write_transaction(add_friend, "Arthur", "Lancelot")
-    # session.write_transaction(add_friend, "Arthur", "Merlin")
-    # session.read_transaction(print_friends, "Arthur")
+    session.read_transaction(findDoctors, "Pediatra")
+    session.write_transaction(makeRelationship, "Willi", "Luca RB")
