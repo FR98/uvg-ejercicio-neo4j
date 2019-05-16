@@ -39,5 +39,13 @@ CREATE
     (Willi) -[:VISITS {date:'10012010'}]-> (DrHouse) -[:PRESCRIBES]-> (Paracetamol) <-[:TAKES]- (Willi),
     (Juan) -[:VISITS {date:'20170515'}]-> (Pedro) -[:PRESCRIBES]-> (Aspirina) <-[:TAKES]- (Juan),
     (Andy) -[:VISITS {date:'28052017'}]-> (Freud) -[:PRESCRIBES]-> (Lansoprazol) <-[:TAKES]- (Andy),
-    (Willi) -[:KNOWS]-> (Luca);
-""")
+    (Cristina) -[:VISITS {date:'15112019'}]-> (Pasteur) -[:PRESCRIBES]-> (Amoxicilina) <-[:TAKES]- (Cristina),
+    (MariaI) -[:VISITS {date:'11122016'}]-> (Hipocrates) -[:PRESCRIBES]-> (Amlodipina) <-[:TAKES]- (MariaI),
+    (Luca) -[:VISITS {date:'11102015'}]-> (Apgar) -[:PRESCRIBES]-> (Omeprazol) <-[:TAKES]- (Luca),
+    (Willi) -[:KNOWS]-> (Luca),
+    (Andy) -[:KNOWS]-> (Marco),
+    (Cristina) -[:KNOWS]-> (Abril),
+    (MariaI) -[:KNOWS]-> (Cristina),
+    (Luca) -[:KNOWS]-> (Alfredo);
+
+    MATCH (n) RETURN n;
