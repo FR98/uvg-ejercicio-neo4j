@@ -5,11 +5,14 @@
 
 from neo4j import GraphDatabase
 
+#Se inicia un servidor y se conecta
 driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "admin123"))
 
+#Al iniciar el programa, borra la base de datos que esta en el localhost
 def deleteLast(tx):
     tx.run("MATCH (n) DETACH DELETE n")
 
+#Se inicializa la base de datos
 def initTransaction(tx):
     tx.run("""
     CREATE
@@ -30,7 +33,7 @@ def initTransaction(tx):
         (Freud: Doctor {name: 'Sigmund Freud', especialidad: 'Psicologo', tel: 45321234}),
         (Pasteur: Doctor {name: 'Louis Pasteur', especialidad: 'Dermatologo', tel: 78307654}),
         (Hipocrates: Doctor {name: 'Hipocrates', especialidad: 'Cardiologo', tel: 54321567}),
-        (Metrodora: Doctor {name: 'Metrodora', especialidad: 'Ginecologa', tel: 46786323}),
+        (Metrodora: Doctor {name: 'Metrodora', especialidad: 'Ginecologo', tel: 46786323}),
         (Blackwell: Doctor {name: 'Elizabeth Blackwell', especialidad: 'Oftalmologo', tel: 75432198}),
         (Lister: Doctor {name: 'Joseph Lister', especialidad: 'Cirujano', tel: 43876542}),
         (Apgar: Doctor {name: 'Virginia Apgar', especialidad: 'Anestesista', tel: 54329087}),
@@ -89,22 +92,25 @@ def initTransaction(tx):
     """)
 
 
+#Se agrega un doctor a la DB
 def addDoctor(tx, name, especialidad, tel):
     tx.run("MERGE (d: Doctor {name: $name, especialidad: $especialidad, tel: $tel})",
             name=name, especialidad=especialidad, tel=tel)
 
+#Se agrega un paciente a la DB
 def addPatient(tx, name, tel):
     tx.run("MERGE (p: Patient {name: $name, tel: $tel})",
             name=name, tel=tel)
 
+#Se crea una cita con el doctor ya existente y un paciente ya existente en la DB
 def visitaMedica(tx, patient, doctor, date, drug):
-    #------------------------------------------------------ FALTA DEFENSIVA
-    #OPTIONAL MATCH (dc: Doctor) WHERE d.name = $doctor
     tx.run("""
     MATCH (p: Patient) WHERE p.name = $patient
-    MERGE (p) -[:VISITS {date: $date}]-> (dc: Doctor {name: $doctor}) -[:PRESCRIBES]-> (d: Drug {name: $drug}) <-[:TAKES]- (p);
+    MATCH (dc: Doctor) WHERE dc.name = $doctor
+    MERGE (p) -[:VISITS {date: $date}]-> (dc) -[:PRESCRIBES]-> (d: Drug {name: $drug}) <-[:TAKES]- (p);
     """, patient=patient, doctor=doctor, drug=drug, date=date)
 
+#Muestra los doctores almacenados en la DB
 def showDoctors(tx, especialidad):
     print("---------------------------")
     for doctor in tx.run("""
@@ -114,34 +120,45 @@ def showDoctors(tx, especialidad):
         print(doctor["d.name"])
     print("---------------------------")
 
+#Crea la relacion entre amigos
 def makeRelationship(tx, person1, person2):
-    #---------------------------------------------Hay que crearlos si no existen?
-    #---------------------------------------------Un nodo puede ser persona y doctor?
-    #---------------------------------------------Un nodo puede ser persona y paciente?
     tx.run("""
     MATCH (p1: Patient) WHERE p1.name = $person1
     MATCH (p2: Patient) WHERE p2.name = $person2
     MERGE (p1) -[:KNOWS]-> (p2)
     """, person1=person1, person2=person2)
 
+#Crea realacion entre doctores
+def makeRelationshipDoctor(tx, person1, person2):
+    tx.run("""
+    MATCH (p1: Doctor) WHERE p1.name = $person1
+    MATCH (p2: Doctor) WHERE p2.name = $person2
+    MERGE (p1) -[:KNOWS]-> (p2)
+    """, person1=person1, person2=person2)
+
+#Recomienda un doctor 
 def recomendarDoctor(tx, paciente, especialidad):
     print("---------------------------")
+    #Recomienda un doctor que un paciente conocido conoce con una especialidad especifica
     for doctor in tx.run("""
     MATCH (p: Patient) WHERE p.name = $paciente
     MATCH (p) -[:KNOWS]-> (:Patient) -[:VISITS]-> (d1:Doctor) WHERE d1.especialidad = $especialidad
     RETURN d1.name
     """, paciente=paciente, especialidad=especialidad):
         print(doctor["d1.name"])
-
+    #Reomienda un doctor que un paciente conocido conoce otro paciente que visito ese doctor
     for doctor in tx.run("""
     MATCH (p: Patient) WHERE p.name = $paciente
     MATCH (p) -[:KNOWS]-> (:Patient) -[:KNOWS]-> (:Patient) -[:VISITS]-> (d2:Doctor) WHERE d2.especialidad = $especialidad
     RETURN d2.name
     """, paciente=paciente, especialidad=especialidad):
-        print(doctor["d2.name"])
 
+        print(doctor["d2.name"])
+        
+#Doctor que refiere a otro doctor
 def referirDoctor(tx, doctor, especialidad):
     print("---------------------------")
+    #Doctor recomienda doctor conocido con especualidad especifica
     for medicoReferido in tx.run("""
     MATCH (d: Doctor) WHERE d.name = $doctor
     MATCH (d) -[:KNOWS]-> (d1:Doctor) WHERE d1.especialidad = $especialidad
@@ -149,6 +166,7 @@ def referirDoctor(tx, doctor, especialidad):
     """, doctor=doctor, especialidad=especialidad):
         print(medicoReferido["d1.name"])
 
+    #Doctor recomienda doctor conocido de algun conocido con especialidad especifica
     for medicoReferido in tx.run("""
     MATCH (d: Doctor) WHERE d.name = $doctor
     MATCH (d) -[:KNOWS]-> (d1:Doctor) -[:KNOWS]-> (d2:Doctor) WHERE d2.especialidad = $especialidad
@@ -156,6 +174,7 @@ def referirDoctor(tx, doctor, especialidad):
     """, doctor=doctor, especialidad=especialidad):
         print(medicoReferido["d2.name"])
 
+#Menu del programa
 def menu():
     return ("""
 -----------------------------
@@ -165,9 +184,10 @@ def menu():
 3. Ingresar visita medica
 4. Mostrar doctores
 5. Crear relacion
-6. Recomendar medico
-7. Referir medico
-8. Salir
+6. Crear relacion de doctor
+7. Recomendar medico
+8. Referir medico
+9. Salir
 -----------------------------
     """)
 
@@ -207,15 +227,19 @@ while continuar:
         persona2 = input("Ingrese el nombre de la segunda persona: ")
         driver.session().write_transaction(makeRelationship, persona1, persona2)
     elif (opcion == "6"):
+        persona1 = input("Ingrese el nombre de la primera persona: ")
+        persona2 = input("Ingrese el nombre de la segunda persona: ")
+        driver.session().write_transaction(makeRelationshipDoctor, persona1, persona2)    
+    elif (opcion == "7"):
         # Recomendacion de doctor buscando por especialidad y doctor que atendio a conocido o conocido de conocido
         paciente = input("Ingrese el nombre del paciente: ")
         especialidad = input("Ingrese la especialidad que busca: ")
         driver.session().write_transaction(recomendarDoctor, paciente, especialidad)
-    elif (opcion == "7"):
+    elif (opcion == "8"):
         doctor = input("Ingrese el nombre del medico: ")
         especialidad = input("Ingrese la especialidad que busca: ")
         driver.session().write_transaction(referirDoctor, doctor, especialidad)
-    elif (opcion == "8"):
+    elif (opcion == "9"):
         print("Adios")
         continuar = False
     else:
